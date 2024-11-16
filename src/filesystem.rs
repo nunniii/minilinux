@@ -74,24 +74,43 @@ impl Directory {
 }
 
 // Aparato para apontar para o diretório através do nome
-pub fn string_to_directory(root: &Directory, name: &str) -> Option<Directory> {
+pub fn find_directory(root: &Directory, name: &str) -> Option<Directory> {
     if root.name == name {
         return Some(root.clone()); 
     }
     for subdir in &root.directories {
-        if let Some(found) = string_to_directory(subdir, name) {
+        if let Some(found) = find_directory(subdir, name) {
             return Some(found);
         }
     }
     None 
 }
 
+pub fn find_file(dir: &Directory, file_name: &str) -> Option<File> {
+    for file in &dir.files {
+        if file.name == file_name {
+            return Some(file.clone());
+        }
+    }
+    for subdir in &dir.directories {
+        if let Some(found) = find_file(subdir, file_name) {
+            return Some(found);
+        }
+    }
+    None
+}
+
+pub fn cat(file_name: &str, root: &Directory) -> String {
+    match find_file(root, file_name) {
+        Some(file) => file.read(),
+        None => format!("File '{}' not found.", file_name),
+    }
+}
+
 pub fn ls(dir_name: &str, root: &Directory) -> String {
     // Para identiicar qual diretório o usuário quer listar
-    match string_to_directory(root, dir_name) {
+    match find_directory(root, dir_name) {
         Some(dir) => dir.list_contents(),
         None => format!("Directory '{}' not found.", dir_name),
     }
 }
-
-

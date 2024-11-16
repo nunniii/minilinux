@@ -2,7 +2,7 @@
 mod filesystem;
 
 use wasm_bindgen::prelude::*;
-use filesystem::{ File, Directory, ls};
+use filesystem::{ File, Directory, ls, cat};
 
 #[wasm_bindgen]
 pub fn get_message() -> String {
@@ -33,6 +33,8 @@ pub fn call_function(command: String) -> String {
 
     currenty_dir.add_directory(subdir);
 
+
+
     match parts.get(0).unwrap_or(&"") {
         &"help" => help(),
         &"version" => version(),
@@ -41,6 +43,13 @@ pub fn call_function(command: String) -> String {
                 ls(parts[1], &currenty_dir)
             } else {
                 currenty_dir.list_contents()
+            }
+        }
+        &"cat" => {
+            if parts.len() > 1 {
+                cat(parts[1], &currenty_dir)
+            } else {
+                "No file specified.".to_string()
             }
         }
         _ => "Command not found.".to_string(),
