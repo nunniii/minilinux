@@ -98,10 +98,18 @@ pub fn start() {
 }
 
 
+
+fn cd(){
+    println!("oi");
+}
+
+
+
+
 #[wasm_bindgen]
 pub fn call_function(command: String, path: String) -> String {
 
-  
+
 
     let parts: Vec<&str> = command.split_whitespace().collect();
 
@@ -126,7 +134,19 @@ pub fn call_function(command: String, path: String) -> String {
     match parts.get(0).unwrap_or(&"") {
         &"help" => help(),
         &"version" => version(),
-        &"cd" => format!("{}:::{}", com.to_string(), &path.to_string()),
+        &"cd" => {
+            if parts.len() > 1 {
+                if parts[1] == "." {
+                    return "you are already here uwu".to_string();
+                } else {
+                    cd();
+                    return "??".to_string();
+                }
+            } else {
+                return "No path specified.".to_string();
+            }
+            format!("{}:::{}", com.to_string(), &path.to_string())
+        } 
         &"ls" => {
             if parts.len() > 1 {
                 ls(parts[1], &currenty_dir)
