@@ -13,13 +13,11 @@ serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
 js-sys = "0.3"
 serde_json = "1.0"
-
+console_error_panic_hook = "0.1"
 
 [features]
-# Define a feature chamada `threads`
 threads = []
 
-# Torna a feature `threads` parte das configurações padrão
 default = ["threads"]
 
 [profile.release]
