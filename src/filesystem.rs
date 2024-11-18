@@ -24,93 +24,70 @@ impl File {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Directory {
-    pub name: String,
-    pub directories: Vec<Directory>,
-    pub files: Vec<File>,
-}
 
-impl Directory {
-    pub fn new(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            directories: Vec::new(),
-            files: Vec::new(),
-        }
-    }
+// #arch
+// -- Ex.: % a|hello.txt|{this is the string of here} a|hi.txt|{string hi} }
+//
+// -- Legenda:
+// % -> indicar início;
+// (a, d, p, c) -> (arquivo, diretório, path, comando)
+//
+// -- Estrutura::     
+//      /name
+//      |
+//      /test  --> hello.txt
+//      hi.txt
 
-    pub fn add_directory(&mut self, subdir: Directory) {
-        self.directories.push(subdir);
-    }
+pub fn get_pahms(input: &str) -> Vec<File> {
+    let mut files = Vec::new();
+    let mut i = 0;
 
-    pub fn add_file(&mut self, file: File) {
-        self.files.push(file);
-    }
+    while i < input.len() {
+        if input[i..].starts_with("a|") {
+            // Localiza o nome do arquivo e seu conteúdo
+            if let Some(name_end) = input[i + 2..].find('|') {
+                let name_start = i + 2;
+                let content_start = name_start + name_end + 2;
 
-    pub fn list_contents(&self) -> String {
-        let mut output = format!("Directory: {}\n", self.name);
-
-        if self.files.is_empty() && self.directories.is_empty() {
-            output.push_str("  (Empty)\n");
+                if let Some(content_end) = input[content_start..].find('}') {
+                    let file_name = &input[name_start..name_start + name_end];
+                    let file_content = &input[content_start..content_start + content_end];
+                    
+                    // Adiciona o arquivo ao vetor
+                    files.push(File::new(file_name, file_content));
+                    
+                    i = content_start + content_end + 1; // Avança após o conteúdo
+                } else {
+                    break; // Conteúdo inválido, encerra a análise
+                }
+            } else {
+                break; // Nome inválido, encerra a análise
+            }
         } else {
-            if !self.files.is_empty() {
-                output.push_str("  Files:\n");
-                for file in &self.files {
-                    output.push_str(&format!("    - {} (content: {})\n", file.name, file.content));
-                }
-            }
-
-            if !self.directories.is_empty() {
-                output.push_str("  Directories:\n");
-                for dir in &self.directories {
-                    output.push_str(&format!("    - {}\n", dir.name));
-                }
-            }
+            i += 1; // Avança no input
         }
-
-        output
     }
+
+    files
 }
 
-// Aparato para apontar para o diretório através do nome
-pub fn find_directory(root: &Directory, name: &str) -> Option<Directory> {
-    if root.name == name {
-        return Some(root.clone()); 
-    }
-    for subdir in &root.directories {
-        if let Some(found) = find_directory(subdir, name) {
-            return Some(found);
-        }
-    }
-    None 
-}
 
-pub fn find_file(dir: &Directory, file_name: &str) -> Option<File> {
-    for file in &dir.files {
-        if file.name == file_name {
-            return Some(file.clone());
-        }
-    }
-    for subdir in &dir.directories {
-        if let Some(found) = find_file(subdir, file_name) {
-            return Some(found);
-        }
-    }
-    None
-}
 
-pub fn cat(file_name: &str, root: &Directory) -> String {
-    match find_file(root, file_name) {
+pub fn cat(file_name: &str, files: &[File]) -> String {
+    match files.iter().find(|file| file.name == file_name) {
         Some(file) => file.read(),
         None => format!("File '{}' not found.", file_name),
     }
 }
 
-pub fn ls(dir_name: &str, root: &Directory) -> String {
-    // Para identiicar qual diretório o usuário quer listar
-    match find_directory(root, dir_name) {
-        Some(dir) => dir.list_contents(),
-        None => format!("Directory '{}' not found.", dir_name),
+pub fn ls(items: &[File]) -> String {
+    if items.is_empty() {
+        return String::from("(Empty)");
     }
+
+    let mut output = String::new();
+    for file in items {
+        output.push_str(&format!("\t{}\n", file.name));
+    }
+    output
 }
